@@ -8,7 +8,7 @@ con = sqlite3.connect("vault.db")
 cur = con.cursor()
 
 cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, type TEXT, value TEXT)")
-
+ 
 load_dotenv(find_dotenv())
 encryption_key = Fernet(os.getenv("KEY"))
 
