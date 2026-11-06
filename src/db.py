@@ -1,23 +1,39 @@
 import sqlite3
-import os
 from dotenv import load_dotenv, find_dotenv
+import os
 from cryptography.fernet import Fernet
 
 
 con = sqlite3.connect("vault.db")
 cur = con.cursor()
 
-cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, type TEXT, value TEXT)")
-
-if "ENCRYPTION_KEY" not in os.environ:
-    key = Fernet.generate_key()
-    os.environ["ENCRYPTION_KEY"] = str(key)
-
- 
 load_dotenv(find_dotenv())
 encryption_key = Fernet(os.getenv("ENCRYPTION_KEY"))
 
+def addRow(type, name, value):
+    if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
+        cur.execute("""
+        INSERT INTO secrets VALUES
+            (?, ?, ?)
+        """, (name, type.lower(), value))
+        con.commit()
+    else:
+        print("is invald.")
 
+def removeRow(name):
+    cur.execute("""
+        DELETE FROM secrets
+        WHERE name = ?
+    """, (name,))
+    con.commit()
+
+def lsNames():
+    cur.execute("""
+            SELECT name FROM secrets;
+        """)
+        
+    ls_name = [row[0] for row in cur.fetchall()]
+    return ls_name
 
 def inpAdd():
     rows = int(input("How many rows do you want to add? "))
@@ -63,34 +79,3 @@ def printDatabase():
         decrypted = encryption_key.decrypt(row[2]).decode('utf-8')
         new_tuple = [row[0], row[1], decrypted]
         print(" | ".join(str(value) for value in new_tuple))
-
-
-
-def addRow(type, name, value):
-    if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
-        cur.execute("""
-        INSERT INTO secrets VALUES
-            (?, ?, ?)
-        """, (name, type.lower(), value))
-        con.commit()
-    else:
-        print("is invald.")
-
-def removeRow(name):
-    cur.execute("""
-        DELETE FROM secrets
-        WHERE name = ?
-    """, (name,))
-    con.commit()
-
-def lsNames():
-    cur.execute("""
-            SELECT name FROM secrets;
-        """)
-        
-    ls_name = [row[0] for row in cur.fetchall()]
-    return ls_name
-
-
-printDatabase()
-printTypes()
