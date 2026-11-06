@@ -12,23 +12,40 @@ cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, ty
 load_dotenv(find_dotenv())
 encryption_key = Fernet(os.getenv("KEY"))
 
+def ask_add():
+    rows = int(input("How many rows do you want to add? "))
 
+    cur.execute("""
+            SELECT name FROM secrets;
+        """)
+    
+    ls_name = [row[0] for row in cur.fetchall()]
+    print(ls_name)
 
-
-def addRow(num):
-    for i in range(num):
+    for i in range(rows):
         type = input("Enter the type of entry that you are saving(API, password, or note):  ")
         name = input("Enter the name of the entry:   ")
-        value = encryption_key.encrypt(bytes(str(input("Enter the value of the entry: ")).encode("utf-8")))
+        value = encryption_key.encrypt(
+            input("Enter the value of the entry: ").encode("utf-8")
+        )
 
-        if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
-            cur.execute("""
-            INSERT INTO secrets VALUES
-                (?, ?, ?)
-            """, (name, type.lower(), value))
-            con.commit()
+        if name in ls_name:
+            print(f"ERROR: The database already contains {name}.")
+            continue
         else:
-            print("is invald.")
+            addRow(type, name, value)
+        
+
+
+def addRow(type, name, value):
+    if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
+        cur.execute("""
+        INSERT INTO secrets VALUES
+            (?, ?, ?)
+        """, (name, type.lower(), value))
+        con.commit()
+    else:
+        print("is invald.")
 
 def printTypes():
     print(" ")
@@ -51,6 +68,6 @@ def printDatabase():
         new_tuple = [row[0], row[1], decrypted]
         print(" | ".join(str(value) for value in new_tuple))
 
-
+ask_add()
 printDatabase()
 printTypes()
