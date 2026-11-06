@@ -9,9 +9,9 @@ cur = con.cursor()
 
 cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, type TEXT, value TEXT)")
 
-if "ENCRYPTION_KEY" in os.environ:
+if "ENCRYPTION_KEY" not in os.environ:
     key = Fernet.generate_key()
-    os.environ["ENCRYPTION_KEY"] = key
+    os.environ["ENCRYPTION_KEY"] = str(key)
 
  
 load_dotenv(find_dotenv())
