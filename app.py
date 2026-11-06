@@ -12,7 +12,7 @@ cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, ty
 load_dotenv(find_dotenv())
 encryption_key = Fernet(os.getenv("KEY"))
 
-def ask_add():
+def inpAdd():
     rows = int(input("How many rows do you want to add? "))
 
     cur.execute("""
@@ -47,6 +47,14 @@ def addRow(type, name, value):
     else:
         print("is invald.")
 
+def removeRow(name):
+    cur.execute("""
+        DELETE FROM secrets
+        WHERE name = ?
+    """, (name,))
+    con.commit()
+
+
 def printTypes():
     print(" ")
     print("These are the types of entries you have:")
@@ -68,6 +76,8 @@ def printDatabase():
         new_tuple = [row[0], row[1], decrypted]
         print(" | ".join(str(value) for value in new_tuple))
 
-ask_add()
+
+
+removeRow("amazon")
 printDatabase()
 printTypes()
