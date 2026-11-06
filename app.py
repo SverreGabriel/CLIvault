@@ -8,9 +8,16 @@ con = sqlite3.connect("vault.db")
 cur = con.cursor()
 
 cur.execute("CREATE TABLE IF NOT EXISTS secrets(name TEXT PRIMARY KEY UNIQUE, type TEXT, value TEXT)")
+
+if "ENCRYPTION_KEY" in os.environ:
+    key = Fernet.generate_key()
+    os.environ["ENCRYPTION_KEY"] = key
+
  
 load_dotenv(find_dotenv())
-encryption_key = Fernet(os.getenv("KEY"))
+encryption_key = Fernet(os.getenv("ENCRYPTION_KEY"))
+
+
 
 def inpAdd():
     rows = int(input("How many rows do you want to add? "))
@@ -36,25 +43,6 @@ def inpRemove():
     else:
         print(f"ERROR: {name} is not in the database.")
 
-
-
-def addRow(type, name, value):
-    if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
-        cur.execute("""
-        INSERT INTO secrets VALUES
-            (?, ?, ?)
-        """, (name, type.lower(), value))
-        con.commit()
-    else:
-        print("is invald.")
-
-def removeRow(name):
-    cur.execute("""
-        DELETE FROM secrets
-        WHERE name = ?
-    """, (name,))
-    con.commit()
-
 def printTypes():
     print(" ")
     print("These are the types of entries you have:")
@@ -76,6 +64,25 @@ def printDatabase():
         new_tuple = [row[0], row[1], decrypted]
         print(" | ".join(str(value) for value in new_tuple))
 
+
+
+def addRow(type, name, value):
+    if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
+        cur.execute("""
+        INSERT INTO secrets VALUES
+            (?, ?, ?)
+        """, (name, type.lower(), value))
+        con.commit()
+    else:
+        print("is invald.")
+
+def removeRow(name):
+    cur.execute("""
+        DELETE FROM secrets
+        WHERE name = ?
+    """, (name,))
+    con.commit()
+
 def lsNames():
     cur.execute("""
             SELECT name FROM secrets;
@@ -84,6 +91,6 @@ def lsNames():
     ls_name = [row[0] for row in cur.fetchall()]
     return ls_name
 
-removeRow("amazon")
+
 printDatabase()
 printTypes()
