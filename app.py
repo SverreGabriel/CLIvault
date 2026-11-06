@@ -15,13 +15,6 @@ encryption_key = Fernet(os.getenv("KEY"))
 def inpAdd():
     rows = int(input("How many rows do you want to add? "))
 
-    cur.execute("""
-            SELECT name FROM secrets;
-        """)
-    
-    ls_name = [row[0] for row in cur.fetchall()]
-    print(ls_name)
-
     for i in range(rows):
         type = input("Enter the type of entry that you are saving(API, password, or note):  ")
         name = input("Enter the name of the entry:   ")
@@ -29,12 +22,20 @@ def inpAdd():
             input("Enter the value of the entry: ").encode("utf-8")
         )
 
-        if name in ls_name:
+        if name in lsNames():
             print(f"ERROR: The database already contains {name}.")
             continue
         else:
             addRow(type, name, value)
         
+def inpRemove():
+    name = str(input("Witch row do you want to remove?  "))
+
+    if name in lsNames():
+        removeRow(name)
+    else:
+        print(f"ERROR: {name} is not in the database.")
+
 
 
 def addRow(type, name, value):
@@ -53,7 +54,6 @@ def removeRow(name):
         WHERE name = ?
     """, (name,))
     con.commit()
-
 
 def printTypes():
     print(" ")
@@ -76,7 +76,13 @@ def printDatabase():
         new_tuple = [row[0], row[1], decrypted]
         print(" | ".join(str(value) for value in new_tuple))
 
-
+def lsNames():
+    cur.execute("""
+            SELECT name FROM secrets;
+        """)
+        
+    ls_name = [row[0] for row in cur.fetchall()]
+    return ls_name
 
 removeRow("amazon")
 printDatabase()
