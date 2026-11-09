@@ -7,8 +7,7 @@ from cryptography.fernet import Fernet
 con = sqlite3.connect("vault.db")
 cur = con.cursor()
 
-load_dotenv(find_dotenv())
-encryption_key = Fernet(os.getenv("ENCRYPTION_KEY"))
+
 
 def addRow(type, name, value):
     if type.lower() == "api" or type.lower() == "password" or type.lower() == "note":
@@ -35,7 +34,7 @@ def lsNames():
     ls_name = [row[0] for row in cur.fetchall()]
     return ls_name
 
-def inpAdd():
+def inpAdd(encryption_key):
     rows = int(input("How many rows do you want to add? "))
 
     for i in range(rows):
@@ -69,7 +68,7 @@ def printTypes():
     for row in base:
         print(list(str(value) for value in row))
 
-def printDatabase():
+def printDatabase(encryption_key):  
     cur.execute("SELECT * FROM secrets ORDER BY type, name;")
     columns = [description[0] for description in cur.description]
     print(" | ".join(columns))
