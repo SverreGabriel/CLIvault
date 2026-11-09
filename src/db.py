@@ -36,19 +36,21 @@ def lsNames():
 
 def inpAdd(encryption_key):
     rows = int(input("How many rows do you want to add? "))
+    if isinstance(rows, int):
+        for i in range(rows):
+            type = input("Enter the type of entry that you are saving(API, password, or note):  ")
+            name = input("Enter the name of the entry:   ")
+            value = encryption_key.encrypt(
+                input("Enter the value of the entry: ").encode("utf-8")
+            )
 
-    for i in range(rows):
-        type = input("Enter the type of entry that you are saving(API, password, or note):  ")
-        name = input("Enter the name of the entry:   ")
-        value = encryption_key.encrypt(
-            input("Enter the value of the entry: ").encode("utf-8")
-        )
-
-        if name in lsNames():
-            print(f"ERROR: The database already contains {name}.")
-            continue
-        else:
-            addRow(type, name, value)
+            if name in lsNames():
+                print(f"ERROR: The database already contains {name}.")
+                continue
+            else:
+                addRow(type, name, value)
+    else:
+        inpAdd(encryption_key)    
         
 def inpRemove():
     name = str(input("Witch row do you want to remove?  "))
